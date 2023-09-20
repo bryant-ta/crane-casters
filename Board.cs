@@ -2,47 +2,64 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Board : MonoBehaviour {
-    public int[,] board;
-    
+[Serializable]
+public class Board {
+    public Block[] Blocks { get; private set; }
+
     public int Width => width;
     public int Height => height;
     [SerializeField] int width, height;
 
-    void Awake() {
-        board = new int[width, height];
-    }
-
-    public bool PlaceBlock(BlockData block, Vector2Int hoverPoint) {
-        List<Vector2Int> newOccupiedPoints = new();
+    public Board(int width, int height) {
+        this.width = width;
+        this.height = height;
         
-        for (int x = 0; x < block.shape.GetLength(0); x++) {
-            for (int y = 0; y < block.shape.GetLength(1); y++) {
-                Vector2Int checkPoint = new Vector2Int(hoverPoint.x + x, hoverPoint.y + y);
-
-                // Block shape is out of bounds (allow empty parts of shape to be "out of bounds")
-                if (!IsInBounds(checkPoint.x, checkPoint.y) && block.shape[x, y] == 1) {
-                    return false;
-                }
-                
-                // Value of board check point + block point should equal >1 overlapping occupied space
-                if (board[checkPoint.x, checkPoint.y] + block.shape[x, y] > 1) {
-                    return false;
-                }
-                
-                newOccupiedPoints.Add(checkPoint);
+        Blocks = new Block[width * height];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Blocks[x + y * width] = new Block(new Vector2Int(x, y), Color.black, false);
             }
         }
-        
+    }
+
+    public bool PlacePiece(Piece piece, Vector2Int hoverPos) {
+        Debug.Log("PlaceBlock - hoverPos: " + hoverPos);
+
+        // width and height /2 when board center is gameobject origin
+        Vector2Int pieceOrigin = new Vector2Int(hoverPos.x + width/2, hoverPos.y + height/2);
+        List<Block> newBlocks = new();
+
+        foreach (Block block in piece.blocks) {
+            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block.position.x, pieceOrigin.y + block.position.y);
+
+            if (!IsValidPlacement(boardPos.x, boardPos.y)) return false;
+            
+            newBlocks.Add(block);
+            Debug.Log("Point: " + boardPos);
+        }
+
         // Passed placement checks, update board with new block
-        foreach (Vector2Int point in newOccupiedPoints) {
-            board[point.x, point.y] = 1;
+        foreach (Block block in newBlocks) {
+            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block.position.x, pieceOrigin.y + block.position.y);
+
+            Block boardBlock = GetBlockAt(boardPos.x, boardPos.y);
+            boardBlock.isActive = true;
+            boardBlock.color = block.color;
         }
 
         return true;
     }
 
-    public bool IsInBounds(int x, int y) {
-        return x <= width - 1 && x >= 0 && y <= height - 1 && y >= 0;
+    public bool IsValidPlacement(int x, int y) { return IsInBounds(x, y) && !GetBlockAt(x, y).isActive; }
+
+    public bool IsInBounds(int x, int y) { return !(x < 0 || x >= width || y < 0 || y >= height); }
+
+    public Block GetBlockAt(int x, int y) {
+        if (!IsInBounds(x, y)) {
+            Debug.LogError("Board: Block position out of bounds!");
+            return null;
+        }
+        
+        return Blocks[x + y * width];
     }
 }

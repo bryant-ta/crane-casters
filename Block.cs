@@ -1,23 +1,29 @@
+using System;
 using UnityEngine;
 
-public class Block : MonoBehaviour {
-	public BlockData BlockData => blockData;
-	[SerializeField] BlockData blockData;
+[Serializable]
+public class Block {
+	public Vector2Int position;
+	public Color color;
+	public bool isActive;
 
-	public void SetBlockData(BlockData blockData) {
-		this.blockData = blockData;
+	public Block() {
+		
 	}
 
-	// TODO: adapt for Block
-	public int[,] RotateRight(int[,] shape, int n) {
-		int[,] ret = new int[n, n];
+	public Block(Vector2Int position, Color color, bool isActive) {
+		this.position = position;
+		this.color = color;
+		this.isActive = isActive;
+	}
 
-		for (int i = 0; i < n; ++i) {
-			for (int j = 0; j < n; ++j) {
-				ret[i, j] = shape[n - j - 1, i];
-			}
-		}
+	public void MoveTo(Vector2Int pos) {
+		// TODO: add event triggering render in BlockRenderer
+		position = new Vector2Int(pos.x, pos.y);
+	}
 
-		return ret;
+	public void MoveTo(int x, int y) {
+		// TODO: add event triggering render in BlockRenderer
+		position = new Vector2Int(x, y);
 	}
 }

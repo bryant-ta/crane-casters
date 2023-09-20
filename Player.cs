@@ -1,18 +1,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using FishNet.Object;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerInput))]
 public class Player : NetworkBehaviour {
-    [SerializeField] Block heldBlock;
+    [SerializeField] [CanBeNull] Piece heldPiece;
+    [SerializeField] GameObject heldPieceObj;
+
     [SerializeField] List<GameObject> nearObjs = new();
 
-    [SerializeField] Board playerBoard;
+    Board playerBoard;
+    [SerializeField] BoardRenderer playerBoardRenderer;
+
+    // [SyncVar] public Client client;
+
+    void Awake() { heldPiece = null; }
+
+    void Start() {
+        playerBoard = new Board(6, 6); // TODO: unhardcode
+        playerBoardRenderer.Init(playerBoard);
+    }
 
     void Interact() {
-        if (heldBlock == null) {
+        if (heldPiece == null) {
             PickUp();
         } else {
             Drop();
@@ -25,30 +38,32 @@ public class Player : NetworkBehaviour {
         float minDistance = int.MaxValue;
         foreach (GameObject obj in nearObjs.ToList()) {
             float d = Vector2.Distance(transform.position, obj.transform.position);
-            if (d < minDistance && obj.TryGetComponent(out Block block)) {
+            if (d < minDistance && obj.TryGetComponent(out PieceRenderer pr)) {
                 minDistance = d;
-                heldBlock = block;
+                heldPiece = pr.piece;
+                heldPieceObj = obj;
             }
         }
-        
-        Utils.S_SetTransform(heldBlock.gameObject, Vector3.zero, Quaternion.identity, transform, false);
+
+        GameManager.Instance.NetworkUtils.S_SetTransform(heldPieceObj, Vector3.zero, Quaternion.identity, transform, false);
     }
 
     void Drop() {
-        if (heldBlock == null) return;
+        if (heldPiece == null) return;
 
-        Vector2Int hoverPoint = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.y));
-        if (!playerBoard.IsInBounds(hoverPoint.x, hoverPoint.y)) {
-            return;
-        }
+        // localPosition works when Player is child of Board and centered at origin
+        Vector2Int hoverPoint = new Vector2Int(Mathf.FloorToInt(transform.localPosition.x), Mathf.FloorToInt(transform.localPosition.y));
 
-        if (!playerBoard.PlaceBlock(heldBlock.BlockData, hoverPoint)) {
+        print("Hoverpoint" + hoverPoint);
+
+        if (!playerBoard.PlacePiece(heldPiece, hoverPoint)) {
             print("cannot place block here");
             return;
         }
-        
-        Utils.S_SetTransform(heldBlock.gameObject, heldBlock.transform.position, heldBlock.transform.rotation, null);
-        heldBlock = null;
+
+        GameManager.Instance.NetworkUtils.S_SetTransform(heldPieceObj, heldPieceObj.transform.position, heldPieceObj.transform.rotation,
+            null);
+        heldPiece = null;
     }
 
     void OnTriggerEnter2D(Collider2D col) {
@@ -66,11 +81,11 @@ public class Player : NetworkBehaviour {
 
     #region UnityEventInput
 
+    // uses Action Type "Button"
     public void OnInteract(InputAction.CallbackContext ctx) {
         if (!base.IsOwner) return;
 
         if (ctx.performed) {
-            print("performed");
             Interact();
         }
     }
