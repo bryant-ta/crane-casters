@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using FishNet.Object;
 using JetBrains.Annotations;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerInput))]
-public class Player : NetworkBehaviour {
+public class Player : MonoBehaviourPun {
     [SerializeField] [CanBeNull] Piece heldPiece;
     [SerializeField] GameObject heldPieceObj;
 
@@ -20,11 +20,11 @@ public class Player : NetworkBehaviour {
     void Awake() { heldPiece = null; }
 
     void Start() {
-        playerBoard = new Board(6, 6); // TODO: unhardcode
-        playerBoardRenderer.Init(playerBoard);
+        // playerBoard = new Board(6, 6); // TODO: unhardcode
+        // playerBoardRenderer.Init(playerBoard);
     }
 
-    void Interact() {
+    public void Interact() {
         if (heldPiece == null) {
             PickUp();
         } else {
@@ -38,14 +38,17 @@ public class Player : NetworkBehaviour {
         float minDistance = int.MaxValue;
         foreach (GameObject obj in nearObjs.ToList()) {
             float d = Vector2.Distance(transform.position, obj.transform.position);
-            if (d < minDistance && obj.TryGetComponent(out PieceRenderer pr)) {
+            if (d < minDistance && obj.TryGetComponent(out Piece piece)) {
                 minDistance = d;
-                heldPiece = pr.piece;
+                heldPiece = piece;
                 heldPieceObj = obj;
             }
         }
 
-        GameManager.Instance.NetworkUtils.S_SetTransform(heldPieceObj, Vector3.zero, Quaternion.identity, transform, false);
+        if (heldPiece) {
+            GameManager.Instance.photonView.RPC(nameof(NetworkUtils.S_SetTransform), RpcTarget.All, heldPiece.photonView.ViewID,
+                Vector3.zero, Quaternion.identity, photonView.ViewID, false);
+        }
     }
 
     void Drop() {
@@ -61,8 +64,7 @@ public class Player : NetworkBehaviour {
             return;
         }
 
-        GameManager.Instance.NetworkUtils.S_SetTransform(heldPieceObj, heldPieceObj.transform.position, heldPieceObj.transform.rotation,
-            null);
+        // GameManager.Instance.NetworkUtils.S_SetTransform(heldPieceObj, heldPieceObj.transform.position, heldPieceObj.transform.rotation, null);
         heldPiece = null;
     }
 
@@ -76,30 +78,4 @@ public class Player : NetworkBehaviour {
             nearObjs.Remove(col.gameObject);
         }
     }
-
-    /***************************    Input Callbacks    ***************************/
-
-    #region UnityEventInput
-
-    // uses Action Type "Button"
-    public void OnInteract(InputAction.CallbackContext ctx) {
-        if (!base.IsOwner) return;
-
-        if (ctx.performed) {
-            Interact();
-        }
-    }
-
-    #endregion
-
-    // can try..
-    // didnt work, other clients still received Interact callback even when disabled
-    // public override void OnStartClient() {
-    //     base.OnStartClient();
-    //
-    //     if (!base.IsOwner) {
-    //         print("disabling?");
-    //         enabled = false;
-    //     }
-    // }
 }
