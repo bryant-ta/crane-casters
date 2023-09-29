@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class Board {
+public class Board : MonoBehaviour {
     public Block[] Blocks { get; private set; }
 
-    public int Width => width;
-    public int Height => height;
-    [SerializeField] int width, height;
+    public int Width => _width;
+    public int Height => _height;
+    [SerializeField] int _width, _height;
 
-    public Board(int width, int height) {
-        this.width = width;
-        this.height = height;
+    [SerializeField] BoardRenderer br;
+
+    public void Init(int width, int height) {
+        _width = width;
+        _height = height;
         
         Blocks = new Block[width * height];
         for (int x = 0; x < width; x++) {
@@ -26,11 +28,11 @@ public class Board {
         Debug.Log("PlaceBlock - hoverPos: " + hoverPos);
 
         // width and height /2 when board center is gameobject origin
-        Vector2Int pieceOrigin = new Vector2Int(hoverPos.x + width/2, hoverPos.y + height/2);
+        Vector2Int pieceOrigin = new Vector2Int(hoverPos.x + _width/2, hoverPos.y + _height/2);
         List<Block> newBlocks = new();
 
-        foreach (Block block in piece.blocks) {
-            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block.position.x, pieceOrigin.y + block.position.y);
+        foreach (Block block in piece.Blocks) {
+            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block._position.x, pieceOrigin.y + block._position.y);
 
             if (!IsValidPlacement(boardPos.x, boardPos.y)) return false;
             
@@ -40,19 +42,19 @@ public class Board {
 
         // Passed placement checks, update board with new block
         foreach (Block block in newBlocks) {
-            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block.position.x, pieceOrigin.y + block.position.y);
+            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block._position.x, pieceOrigin.y + block._position.y);
 
             Block boardBlock = GetBlockAt(boardPos.x, boardPos.y);
-            boardBlock.isActive = true;
-            boardBlock.color = block.color;
+            boardBlock._isActive = true;
+            boardBlock._color = block._color;
         }
 
         return true;
     }
 
-    public bool IsValidPlacement(int x, int y) { return IsInBounds(x, y) && !GetBlockAt(x, y).isActive; }
+    public bool IsValidPlacement(int x, int y) { return IsInBounds(x, y) && !GetBlockAt(x, y)._isActive; }
 
-    public bool IsInBounds(int x, int y) { return !(x < 0 || x >= width || y < 0 || y >= height); }
+    public bool IsInBounds(int x, int y) { return !(x < 0 || x >= _width || y < 0 || y >= _height); }
 
     public Block GetBlockAt(int x, int y) {
         if (!IsInBounds(x, y)) {
@@ -60,6 +62,6 @@ public class Board {
             return null;
         }
         
-        return Blocks[x + y * width];
+        return Blocks[x + y * _width];
     }
 }

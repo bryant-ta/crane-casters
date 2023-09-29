@@ -1,32 +1,20 @@
 using System;
-using System.Linq;
-using FishNet.Object;
-using FishNet.Object.Synchronizing;
-using UnityEditor;
+using Photon.Pun;
 using UnityEngine;
 
-public class GameManager : NetworkBehaviour {
+public class GameManager : MonoBehaviourPun {
 	public static GameManager Instance { get; private set; }
 
-	[SyncObject] public readonly SyncList<Client> clients = new();
+	[SerializeField] bool _canStart;
 
-	[SyncVar] public bool canStart;
+	public NetworkUtils NetworkUtils => _networkUtils;
+	[SerializeField] NetworkUtils _networkUtils;
 
-	public NetworkUtils NetworkUtils;
-	
 	void Awake() {
 		if (Instance != null && Instance != this) {
 			Destroy(gameObject);
 		} else {
 			Instance = this;
 		}
-
-		NetworkUtils = GetComponent<NetworkUtils>();
-	}
-
-	void Update() {
-		if (!IsServer) return;
-
-		canStart = clients.All(client => client.isReady);
 	}
 }
