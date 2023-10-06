@@ -3,14 +3,19 @@ using Photon.Pun;
 using UnityEngine;
 
 public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
-    public List<Vector2Int> _shape;
-    public Color _color;
-    public bool _canRotate;
+    public List<Vector2Int> Shape => _shape;
+    [SerializeField] List<Vector2Int> _shape;
+    
+    public Color Color => _color;
+    [SerializeField] Color _color;
+    
+    public bool CanRotate => _canRotate;
+    [SerializeField] bool _canRotate;
 
     public List<Block> Blocks => _blocks;
     List<Block> _blocks = new();
 
-    [SerializeField] PieceRenderer pr;
+    PieceRenderer _pr;
 
     public void Init(PieceData pieceData) {
         _shape = pieceData.shape;
@@ -24,7 +29,10 @@ public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
         }
         
         // Init PieceRenderer with populated Block list
-        pr.Init();
+        if (TryGetComponent(out PieceRenderer pr)) {
+            _pr = pr;
+            _pr.Init(this);
+        }
     }
 
     public void OnPhotonInstantiate(PhotonMessageInfo info) {

@@ -7,14 +7,15 @@ public class GameManager : MonoBehaviourPun {
 
 	[SerializeField] bool _canStart;
 
-	public NetworkUtils NetworkUtils => _networkUtils;
-	[SerializeField] NetworkUtils _networkUtils;
-
 	void Awake() {
 		if (Instance != null && Instance != this) {
 			Destroy(gameObject);
 		} else {
 			Instance = this;
 		}
+	}
+
+	public void Start() {
+		
 	}
 }
