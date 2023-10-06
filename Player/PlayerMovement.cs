@@ -1,6 +1,5 @@
 using Photon.Pun;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerMovement : MonoBehaviourPun {

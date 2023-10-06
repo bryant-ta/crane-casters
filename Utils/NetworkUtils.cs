@@ -1,9 +1,18 @@
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
 
 [RequireComponent(typeof(PhotonView))]
+[SuppressMessage("ReSharper", "InvalidXmlDocComment")]
 public class NetworkUtils : MonoBehaviour {
+    void Awake() {
+        // Register serialization custom types
+        // RegisterType must be in Start (or earlier?), otherwise client issues
+        PhotonPeer.RegisterType(typeof(PieceData), 255, PieceData.Serialize, PieceData.Deserialize);
+        PhotonPeer.RegisterType(typeof(Block), 254, Block.Serialize, Block.Deserialize); 
+    }
+
     /// <summary>
     /// RPC for basic transform changes.
     /// </summary>
@@ -12,12 +21,19 @@ public class NetworkUtils : MonoBehaviour {
     [PunRPC]
     public void S_SetTransform(int targetID, Vector3 position, Quaternion rotation, int parentID, bool keepWorldPosition) {
         Transform targetTransform = PhotonView.Find(targetID).gameObject.transform;
+        
+        // Disable any Photon sync components
+        if (TryGetComponent(out PhotonTransformView ptv)) {
+            ptv.enabled = false;
+        }
 
+        // Set parent if requested
         if (parentID != -1) {
             Transform parentTransform = PhotonView.Find(parentID).gameObject.transform;
             targetTransform.SetParent(parentTransform);
         }
 
+        // Set transform
         if (!keepWorldPosition) {
             targetTransform.localPosition = position;
             targetTransform.localRotation = rotation;
@@ -26,35 +42,6 @@ public class NetworkUtils : MonoBehaviour {
             targetTransform.rotation = rotation;
         }
     }
-    
-    [PunRPC]
-    public void S_SetTransform(GameObject obj, Vector3 position, Quaternion rotation, Transform parent, bool keepWorldPosition = true) {
-        obj.transform.SetParent(parent);
-
-        if (!keepWorldPosition) {
-            obj.transform.localPosition = position;
-            obj.transform.localRotation = rotation;
-        } else {
-            obj.transform.position = position;
-            obj.transform.rotation = rotation;
-        }
-    }
-    
-    // public void S_SetTransform(GameObject obj, Vector3 position, Quaternion rotation, Transform parent, bool keepWorldPosition = true) {
-    //     O_SetTransform(obj, position, rotation, parent, keepWorldPosition);
-    // }
-    //
-    // public void O_SetTransform(GameObject obj, Vector3 position, Quaternion rotation, Transform parent, bool keepWorldPosition = true) {
-    //     obj.transform.SetParent(parent);
-    //
-    //     if (!keepWorldPosition) {
-    //         obj.transform.localPosition = position;
-    //         obj.transform.localRotation = rotation;
-    //     } else {
-    //         obj.transform.position = position;
-    //         obj.transform.rotation = rotation;
-    //     }
-    // }
     
     // public static byte[] Vector2IntToBytes(Vector2Int vector) {
     //     using MemoryStream stream = new MemoryStream();

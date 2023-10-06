@@ -1,16 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Piece))]
 public class PieceRenderer : MonoBehaviour {
-    [SerializeField] Piece piece;
+    Piece _piece;
 
     Dictionary<Block, SpriteRenderer> _blockSprites = new();
 
     // Should usually call after initializing Piece
-    public void Init() {
+    public void Init(Piece piece) {
+        _piece = piece;
+        
         // Create SpriteRenderers for Piece's Blocks
-        foreach (Block block in piece.Blocks) {
-            GameObject blockObj = Instantiate(PieceFactory.BlockBase, piece.transform, true);
+        foreach (Block block in _piece.Blocks) {
+            GameObject blockObj = Instantiate(PieceFactory.BlockBase, _piece.transform, true);
 
             if (blockObj.TryGetComponent(out SpriteRenderer sr)) {
                 _blockSprites[block] = blockObj.GetComponent<SpriteRenderer>();
@@ -22,12 +25,12 @@ public class PieceRenderer : MonoBehaviour {
         Render();
     }
 
+    // Update render for Piece's Blocks
     public void Render() {
-        // Update render for Piece's Blocks
-        foreach (Block block in piece.Blocks) {
+        foreach (Block block in _piece.Blocks) {
             SpriteRenderer sr = _blockSprites[block];
-            sr.transform.localPosition = new Vector3(block._position.x, block._position.y, 0);
-            sr.color = block._color;
+            sr.transform.localPosition = new Vector3(block.position.x, block.position.y, 0);
+            sr.color = block.color;
         }
     }
 }
