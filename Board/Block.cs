@@ -4,24 +4,24 @@ using UnityEngine;
 
 [Serializable]
 public class Block {
-    public Vector2Int position;
-    public Color color;
-    public bool isActive;
+    public Vector2Int Position;
+    public Color Color;
+    public bool IsActive;
 
     public Block(Vector2Int position, Color color, bool isActive = true) {
-        this.position = position;
-        this.color = color;
-        this.isActive = isActive;
+        Position = position;
+        Color = color;
+        IsActive = isActive;
     }
 
     public void MoveTo(Vector2Int pos) {
         // TODO: add event triggering render in BlockRenderer
-        position = new Vector2Int(pos.x, pos.y);
+        Position = new Vector2Int(pos.x, pos.y);
     }
 
     public void MoveTo(int x, int y) {
         // TODO: add event triggering render in BlockRenderer
-        position = new Vector2Int(x, y);
+        Position = new Vector2Int(x, y);
     }
 
     #region Serialization
@@ -35,13 +35,13 @@ public class Block {
     	using (BinaryWriter writer = new BinaryWriter(stream))
     	{
     		// Serialize each field of the Block class
-    		writer.Write(block.position.x);
-    		writer.Write(block.position.y);
-    		writer.Write(block.color.r);
-    		writer.Write(block.color.g);
-    		writer.Write(block.color.b);
-    		writer.Write(block.color.a);
-    		writer.Write(block.isActive);
+    		writer.Write(block.Position.x);
+    		writer.Write(block.Position.y);
+    		writer.Write(block.Color.r);
+    		writer.Write(block.Color.g);
+    		writer.Write(block.Color.b);
+    		writer.Write(block.Color.a);
+    		writer.Write(block.IsActive);
            
     		// Convert the MemoryStream to a byte array and return it
     		return stream.ToArray();
@@ -58,13 +58,13 @@ public class Block {
     	using (BinaryReader reader = new BinaryReader(stream))
     	{
     		// Deserialize each field of the Block class
-    		result.position.x = reader.ReadInt32();
-    		result.position.y = reader.ReadInt32();
-    		result.color.r = reader.ReadSingle();
-    		result.color.g = reader.ReadSingle();
-    		result.color.b = reader.ReadSingle();
-    		result.color.a = reader.ReadSingle();
-    		result.isActive = reader.ReadBoolean();
+    		result.Position.x = reader.ReadInt32();
+    		result.Position.y = reader.ReadInt32();
+    		result.Color.r = reader.ReadSingle();
+    		result.Color.g = reader.ReadSingle();
+    		result.Color.b = reader.ReadSingle();
+    		result.Color.a = reader.ReadSingle();
+    		result.IsActive = reader.ReadBoolean();
     	}
        
     	return result;

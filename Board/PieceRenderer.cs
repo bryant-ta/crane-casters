@@ -29,8 +29,8 @@ public class PieceRenderer : MonoBehaviour {
     public void Render() {
         foreach (Block block in _piece.Blocks) {
             SpriteRenderer sr = _blockSprites[block];
-            sr.transform.localPosition = new Vector3(block.position.x, block.position.y, 0);
-            sr.color = block.color;
+            sr.transform.localPosition = new Vector3(block.Position.x, block.Position.y, 0);
+            sr.color = block.Color;
         }
     }
 }

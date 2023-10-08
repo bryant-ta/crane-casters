@@ -26,4 +26,12 @@ public class PlayerInput : MonoBehaviourPun {
             _player.Interact();
         }
     }
+    
+    public void OnRotate(InputAction.CallbackContext ctx) {
+        if (!photonView.IsMine) return;
+
+        if (ctx.performed) {
+            _player.RotatePiece();
+        }
+    }
 }

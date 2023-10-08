@@ -26,9 +26,11 @@ public class PieceFactory : MonoBehaviour {
         // DEBUG
         if (PhotonNetwork.IsMasterClient && PhotonNetwork.InRoom && _flag) {
             PieceData bd = PieceTypeLookUp.LookUp[PieceType.L];
-            bd.color = Color.cyan;
-            
-            CreatePieceObj(bd, new Vector2(0, 2));
+            bd.Color = Color.cyan;
+            bd.CanRotate = true;
+
+            Piece p = CreatePieceObj(bd, new Vector2(0, 2));
+            p.photonView.RPC(nameof(MoveToPoint.Disable), RpcTarget.All);
 
             _flag = false;
         }

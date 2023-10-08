@@ -28,10 +28,10 @@ public class BoardRenderer : MonoBehaviour {
 	public void Render() {
 		foreach (Block block in _board.Blocks) {
 			SpriteRenderer sr = _blockSprites[block];
-			sr.transform.localPosition = new Vector3(block.position.x, block.position.y, 0);
-			sr.color = block.color;
+			sr.transform.localPosition = new Vector3(block.Position.x, block.Position.y, 0);
+			sr.color = block.Color;
 
-			sr.gameObject.SetActive(block.isActive);
+			sr.gameObject.SetActive(block.IsActive);
 		}
 	}
 }

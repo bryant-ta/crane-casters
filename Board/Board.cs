@@ -37,7 +37,7 @@ public class Board : MonoBehaviourPun {
     }
 
     public bool PlacePiece(Piece piece, Vector2Int hoverPos) {
-        Debug.Log("PlaceBlock - hoverPos: " + hoverPos);
+        // Debug.Log("PlaceBlock - hoverPos: " + hoverPos);
 
         // width and height /2 when board center is gameobject origin
         // Vector2Int pieceOrigin = new Vector2Int(hoverPos.x + _width/2, hoverPos.y + _height/2);
@@ -46,12 +46,12 @@ public class Board : MonoBehaviourPun {
 
         // Validate placed locations
         foreach (Block block in piece.Blocks) {
-            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block.position.x, pieceOrigin.y + block.position.y);
+            Vector2Int boardPos = new Vector2Int(pieceOrigin.x + block.Position.x, pieceOrigin.y + block.Position.y);
 
             if (!IsValidPlacement(boardPos.x, boardPos.y)) return false;
             
             newBlocks.Add(block);
-            Debug.Log("Point: " + boardPos);
+            // Debug.Log("Point: " + boardPos);
         }
 
         // Passed placement checks, update board with new block
@@ -67,15 +67,15 @@ public class Board : MonoBehaviourPun {
 
     [PunRPC]
     public void S_UpdateBlock(Block newBlock, int originX, int originY) {
-        Vector2Int boardPos = new Vector2Int(originX + newBlock.position.x, originY + newBlock.position.y);
+        Vector2Int boardPos = new Vector2Int(originX + newBlock.Position.x, originY + newBlock.Position.y);
 
         Block boardBlock = _blocks[boardPos.x, boardPos.y];
-        boardBlock.isActive = true;
-        boardBlock.color = newBlock.color;
+        boardBlock.IsActive = true;
+        boardBlock.Color = newBlock.Color;
 
         _br.Render();
     }
 
-    public bool IsValidPlacement(int x, int y) { return IsInBounds(x, y) && !_blocks[x,y].isActive; }
+    public bool IsValidPlacement(int x, int y) { return IsInBounds(x, y) && !_blocks[x,y].IsActive; }
     public bool IsInBounds(int x, int y) { return !(x < 0 || x >= _width || y < 0 || y >= _height); }
 }

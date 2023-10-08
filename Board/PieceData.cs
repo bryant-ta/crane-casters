@@ -5,9 +5,9 @@ using UnityEngine;
 
 public enum PieceType {
     O1,
-    O2,
-    I2,
-    I3,
+    // O2,
+    // I2,
+    // I3,
     I4,
     L,
 }
@@ -16,13 +16,13 @@ public static class PieceTypeLookUp {
     public static Dictionary<PieceType, PieceData> LookUp = new Dictionary<PieceType, PieceData>() {
         {
             PieceType.O1, new PieceData() {
-                shape = new List<Vector2Int>() {
+                Shape = new List<Vector2Int>() {
                     new(0,0)
                 }
             }
         }, {
             PieceType.L, new PieceData() {
-                shape = new List<Vector2Int>() {
+                Shape = new List<Vector2Int>() {
                     new(0,0),
                     new(0,1),
                     new(0,-1),
@@ -31,7 +31,7 @@ public static class PieceTypeLookUp {
             }
         }, {
             PieceType.I4, new PieceData() {
-                shape = new List<Vector2Int>() {
+                Shape = new List<Vector2Int>() {
                     new(0,0),
                     new(0,1),
                     new(0,-1),
@@ -44,10 +44,12 @@ public static class PieceTypeLookUp {
 
 [Serializable]
 public struct PieceData {
-    public List<Vector2Int> shape;
-    public Color color;
-    public bool canRotate;
-    
+    public List<Vector2Int> Shape;
+    public Color Color;
+    public bool CanRotate;
+
+    public Vector2 MoveToPoint;
+
     #region Serialization
 
     public static byte[] Serialize(object input) {
@@ -55,18 +57,21 @@ public struct PieceData {
         
         using (MemoryStream stream = new MemoryStream())
         using (BinaryWriter writer = new BinaryWriter(stream)) {
-            writer.Write(data.shape.Count);
-            foreach (Vector2Int pos in data.shape) {
+            writer.Write(data.Shape.Count);
+            foreach (Vector2Int pos in data.Shape) {
                 writer.Write(pos.x);
                 writer.Write(pos.y);
             }
 
-            writer.Write(data.color.r);
-            writer.Write(data.color.g);
-            writer.Write(data.color.b);
-            writer.Write(data.color.a);
+            writer.Write(data.Color.r);
+            writer.Write(data.Color.g);
+            writer.Write(data.Color.b);
+            writer.Write(data.Color.a);
 
-            writer.Write(data.canRotate);
+            writer.Write(data.CanRotate);
+            
+            writer.Write(data.MoveToPoint.x);
+            writer.Write(data.MoveToPoint.y);
 
             return stream.ToArray();
         }
@@ -84,15 +89,17 @@ public struct PieceData {
                 int y = reader.ReadInt32();
                 shape.Add(new Vector2Int(x, y));
             }
-            result.shape = shape;
+            result.Shape = shape;
 
             float r = reader.ReadSingle();
             float g = reader.ReadSingle();
             float b = reader.ReadSingle();
             float a = reader.ReadSingle();
-            result.color = new Color(r, g, b, a);
+            result.Color = new Color(r, g, b, a);
 
-            result.canRotate = reader.ReadBoolean();
+            result.CanRotate = reader.ReadBoolean();
+
+            result.MoveToPoint = new Vector2(reader.ReadSingle(), reader.ReadSingle());
         }
 
         return result;

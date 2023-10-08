@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
@@ -5,10 +7,10 @@ using UnityEngine;
 public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
     public List<Vector2Int> Shape => _shape;
     [SerializeField] List<Vector2Int> _shape;
-    
+
     public Color Color => _color;
     [SerializeField] Color _color;
-    
+
     public bool CanRotate => _canRotate;
     [SerializeField] bool _canRotate;
 
@@ -18,16 +20,24 @@ public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
     PieceRenderer _pr;
 
     public void Init(PieceData pieceData) {
-        _shape = pieceData.shape;
-        _color = pieceData.color;
-        _canRotate = pieceData.canRotate;
+        _shape = pieceData.Shape;
+        _color = pieceData.Color;
+        _canRotate = pieceData.CanRotate;
+        
+        // Setup MoveToPoint
+        print(pieceData.MoveToPoint);
+        if (TryGetComponent(out MoveToPoint mtp)) {
+            print("setting move to point");
+            mtp.SetMoveToPoint(pieceData.MoveToPoint);
+            mtp.enabled = true;
+        }
 
         // Populate Block list
-        foreach (Vector2Int blockOffset in pieceData.shape) {
-            Block block = new Block(blockOffset, pieceData.color, true);
+        foreach (Vector2Int blockOffset in pieceData.Shape) {
+            Block block = new Block(blockOffset, pieceData.Color, true);
             _blocks.Add(block);
         }
-        
+
         // Init PieceRenderer with populated Block list
         if (TryGetComponent(out PieceRenderer pr)) {
             _pr = pr;
@@ -35,8 +45,37 @@ public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
         }
     }
 
-    public void OnPhotonInstantiate(PhotonMessageInfo info) {
-        Init((PieceData)info.photonView.InstantiationData[0]);
+    public void OnPhotonInstantiate(PhotonMessageInfo info) { Init((PieceData) info.photonView.InstantiationData[0]); }
+
+    // Rotate clockwise
+    [PunRPC]
+    public void RotateCW() {
+        if (!_canRotate) return;
+
+        foreach (Block block in _blocks) {
+            // Simplified clockwise rotation assuming pivot point is always (0,0)
+            int newX = block.Position.y;
+            int newY = -block.Position.x;
+
+            block.Position = new Vector2Int(newX, newY);
+        }
+
+        _pr.Render();
+    }
+
+    // Rotate counterclockwise
+    public void RotateCCW() {
+        if (!_canRotate) return;
+
+        foreach (Block block in _blocks) {
+            // Simplified rotation assuming pivot point is always (0,0)
+            int newX = -block.Position.y;
+            int newY = block.Position.x;
+
+            block.Position = new Vector2Int(newX, newY);
+        }
+
+        _pr.Render();
     }
 
     // Rotates the current piece clockwise.

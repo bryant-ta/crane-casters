@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Photon.Pun;
@@ -6,20 +7,24 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerInput))]
 public class Player : MonoBehaviourPun {
     [SerializeField] Piece _heldPiece;
+    [SerializeField] LayerMask _interactableLayer;
 
     Board _playerBoard;
+
     List<GameObject> _nearObjs = new();
 
-    void Start() {
-        _playerBoard = GetComponentInParent<Board>();
-    }
-    
+    void Start() { _playerBoard = GetComponentInParent<Board>(); }
+
     public void Interact() {
         if (_heldPiece == null) {
             PickUp();
         } else {
             Drop();
         }
+    }
+
+    public void RotatePiece() {
+        if (_heldPiece) _heldPiece.photonView.RPC(nameof(Piece.RotateCW), RpcTarget.All);
     }
 
     void PickUp() {
@@ -37,10 +42,15 @@ public class Player : MonoBehaviourPun {
 
         // Pickup piece
         if (_heldPiece) {
+            if (_heldPiece.TryGetComponent(out MoveToPoint mtp)) {
+                // mtp.Disable();
+                _heldPiece.photonView.RPC(nameof(MoveToPoint.Disable), RpcTarget.All);
+            }
+
             // Take ownership of held piece
             // _heldPiece.photonView.RequestOwnership(); // server authoritative - requires Piece Ownership -> Request
             _heldPiece.photonView.TransferOwnership(photonView.Owner); // client authoritative - requires Piece Ownership -> Takeover
-            
+
             // Make piece a child object of player
             GameManager.Instance.photonView.RPC(nameof(NetworkUtils.S_SetTransform), RpcTarget.All, _heldPiece.photonView.ViewID,
                 Vector3.zero, Quaternion.identity, photonView.ViewID, false);
@@ -51,17 +61,25 @@ public class Player : MonoBehaviourPun {
         if (_heldPiece == null) return;
 
         // localPosition works when Player is child of Board and centered at origin
-        Vector2Int hoverPoint = new Vector2Int(Mathf.FloorToInt(transform.localPosition.x), Mathf.FloorToInt(transform.localPosition.y));
+        Vector2Int hoverPoint = new Vector2Int(Mathf.RoundToInt(transform.localPosition.x), Mathf.RoundToInt(transform.localPosition.y));
 
-        print("Hoverpoint" + hoverPoint);
+        // print("Hoverpoint" + hoverPoint);
 
-        if (!_playerBoard.PlacePiece(_heldPiece, hoverPoint)) {
-            print("cannot place block here");
+        if (_playerBoard.PlacePiece(_heldPiece, hoverPoint)) {
+            _heldPiece = null;
             return;
+        } else {
+            Debug.Log($"Unable to place block at ({hoverPoint.x}, {hoverPoint.y})");
         }
 
-        // GameManager.Instance.NetworkUtils.S_SetTransform(heldPieceObj, heldPieceObj.transform.position, heldPieceObj.transform.rotation, null);
-        _heldPiece = null;
+        // Check if trashing
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.zero, 100.0f, _interactableLayer);
+        if (hit) {
+            if (hit.collider.TryGetComponent(out Trash trash)) {
+                trash.TrashObj(_heldPiece.gameObject);
+                _heldPiece = null;
+            }
+        }
     }
 
     void OnTriggerEnter2D(Collider2D col) {
@@ -69,6 +87,7 @@ public class Player : MonoBehaviourPun {
             _nearObjs.Add(col.gameObject);
         }
     }
+
     void OnTriggerExit2D(Collider2D col) {
         if (_nearObjs.Contains(col.gameObject)) {
             _nearObjs.Remove(col.gameObject);
