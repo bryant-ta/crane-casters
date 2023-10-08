@@ -27,7 +27,7 @@ public class PieceSpawner : MonoBehaviourPun {
 	void SpawnPiece() {
 		Piece piece = PieceFactory.Instance.CreatePieceObj(GeneratePieceData(), transform.position);
 		if (piece.TryGetComponent(out MoveToPoint mtp)) {
-			// mtp.EndPoint = _endPoint;
+			mtp.SetMoveToPoint(_endPoint.position);
 			mtp.OnReachedEnd += CleanUpPiece;
 		}
 	}

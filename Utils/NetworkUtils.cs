@@ -23,7 +23,8 @@ public class NetworkUtils : MonoBehaviour {
         Transform targetTransform = PhotonView.Find(targetID).gameObject.transform;
         
         // Disable any Photon sync components
-        if (TryGetComponent(out PhotonTransformView ptv)) {
+        if (targetTransform.TryGetComponent(out PhotonTransformView ptv)) {
+            print("disabled photontransform view");
             ptv.enabled = false;
         }
 

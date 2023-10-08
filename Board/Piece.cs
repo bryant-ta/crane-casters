@@ -25,11 +25,11 @@ public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
         _canRotate = pieceData.CanRotate;
         
         // Setup MoveToPoint
-        print(pieceData.MoveToPoint);
+        // print(pieceData.MoveToPoint);
         if (TryGetComponent(out MoveToPoint mtp)) {
-            print("setting move to point");
-            mtp.SetMoveToPoint(pieceData.MoveToPoint);
-            mtp.enabled = true;
+            // print("setting move to point");
+            // mtp.SetMoveToPoint(pieceData.MoveToPoint);
+            // mtp.enabled = true;
         }
 
         // Populate Block list
