@@ -24,7 +24,6 @@ public class NetworkUtils : MonoBehaviour {
         
         // Disable any Photon sync components
         if (targetTransform.TryGetComponent(out PhotonTransformView ptv)) {
-            print("disabled photontransform view");
             ptv.enabled = false;
         }
 

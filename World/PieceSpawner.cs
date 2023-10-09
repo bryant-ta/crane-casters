@@ -4,7 +4,7 @@ using Photon.Pun;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class PieceSpawner : MonoBehaviourPun {
+public class PieceSpawner : MonoBehaviour {
 	[SerializeField] [Tooltip("Spawn every X seconds")] int _spawnRate = 10;
 	[SerializeField] Transform _endPoint;
 	
@@ -15,7 +15,6 @@ public class PieceSpawner : MonoBehaviourPun {
 		if (!PhotonNetwork.IsMasterClient) return;
 		
 		if (_timer > _spawnRate) {
-			// photonView.RPC(nameof(SpawnPiece), RpcTarget.All);
 			SpawnPiece();
 			
 			_timer = 0f;
@@ -36,7 +35,6 @@ public class PieceSpawner : MonoBehaviourPun {
 		PieceData pieceData = PieceTypeLookUp.LookUp[Utils.GetRandomEnum<PieceType>()];
 		pieceData.Color = _pieceColors[Random.Range(0, _pieceColors.Count)];
 		pieceData.CanRotate = true;
-		pieceData.MoveToPoint = _endPoint.transform.position;
 
 		return pieceData;
 	}
