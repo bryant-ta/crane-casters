@@ -12,6 +12,8 @@ public class MoveToPoint : MonoBehaviour {
 
     void Awake() {
         if (EndPoint) _endPos = EndPoint.position;
+
+        if (!PhotonNetwork.IsMasterClient) enabled = false;
     }
 
     // set enabled = false to stop

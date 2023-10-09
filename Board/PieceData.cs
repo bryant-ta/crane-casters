@@ -48,8 +48,6 @@ public struct PieceData {
     public Color Color;
     public bool CanRotate;
 
-    public Vector2 MoveToPoint;
-
     #region Serialization
 
     public static byte[] Serialize(object input) {
@@ -69,9 +67,6 @@ public struct PieceData {
             writer.Write(data.Color.a);
 
             writer.Write(data.CanRotate);
-            
-            writer.Write(data.MoveToPoint.x);
-            writer.Write(data.MoveToPoint.y);
 
             return stream.ToArray();
         }
@@ -98,8 +93,6 @@ public struct PieceData {
             result.Color = new Color(r, g, b, a);
 
             result.CanRotate = reader.ReadBoolean();
-
-            result.MoveToPoint = new Vector2(reader.ReadSingle(), reader.ReadSingle());
         }
 
         return result;
