@@ -6,18 +6,24 @@ public class PlayerSpawner : MonoBehaviourPunCallbacks {
 	[SerializeField] Transform[] _spawnPositions;
 
 	public override void OnJoinedRoom() {
+		// Check max players
 		int curNumPlayers = PhotonNetwork.CurrentRoom.PlayerCount;
-		if (curNumPlayers > _spawnPositions.Length) {
-			Debug.LogError("Failed to spawn player: not enough spawn positions.");
+		if (curNumPlayers > 4) { // TODO: pull from Photon room info
+			Debug.LogError("Failed to spawn player: room is full");
 			return;
 		}
-		
-		int playerId = PhotonNetwork.LocalPlayer.ActorNumber;
-		
-		Transform spawnPos = _spawnPositions[playerId - 1];
-		object[] initData = {playerId};
-		GameObject playerObj = PhotonNetwork.Instantiate(Constants.PhotonPrefabsPath + _playerObj.name, spawnPos.position, spawnPos.rotation, 0, initData);
 
-		// note: player object likely does not exist immediately after PhotonNetwork.Instantiate, so can't rely on it here
+		// Setup Player
+		int playerId = curNumPlayers - 1;
+		Player player = GameManager.Instance.PlayerList[playerId];
+		player.PlayerId = playerId;
+
+		// Enable Player on all clients
+		GameManager.Instance.photonView.RPC(nameof(GameManager.EnablePlayerObj), RpcTarget.AllBuffered, playerId); // care for calling this often, buffered
+		
+		// Set Player object ownership
+		if (!player.photonView.IsMine) {
+			player.photonView.TransferOwnership(PhotonNetwork.LocalPlayer); // client authoritative - requires Player Ownership -> Takeover
+		}
 	}
 }

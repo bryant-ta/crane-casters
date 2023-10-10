@@ -5,25 +5,17 @@ using Photon.Pun;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerInput))]
-public class Player : MonoBehaviourPun, IPunInstantiateMagicCallback {
+public class Player : MonoBehaviourPun {
     public int PlayerId;
     
     [SerializeField] Piece _heldPiece;
     [SerializeField] LayerMask _interactableLayer;
 
-    Board _playerBoard;
+    [SerializeField] Board _playerBoard;
     PlayerHealth _attackTarget;
 
     List<GameObject> _nearObjs = new();
-
-    void Awake() { _playerBoard = GetComponentInParent<Board>(); }
-
-    public void OnPhotonInstantiate(PhotonMessageInfo info) {
-        PlayerId = (int) info.photonView.InstantiationData[0];
-        
-        GameManager.Instance.UpdatePlayerList();
-    }
-
+    
     public void Interact() {
         if (_heldPiece == null) {
             PickUp();
@@ -126,5 +118,14 @@ public class Player : MonoBehaviourPun, IPunInstantiateMagicCallback {
         if (_nearObjs.Contains(col.gameObject)) {
             _nearObjs.Remove(col.gameObject);
         }
+    }
+    
+    public void Enable() {
+        _playerBoard.gameObject.SetActive(true);
+        enabled = true;
+    }
+    public void Disable() {
+        _playerBoard.gameObject.SetActive(false);
+        enabled = false;
     }
 }
