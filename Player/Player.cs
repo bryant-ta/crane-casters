@@ -78,7 +78,6 @@ public class Player : MonoBehaviourPun, IPunInstantiateMagicCallback {
         // Pickup piece
         if (_heldPiece) {
             if (_heldPiece.TryGetComponent(out MoveToPoint mtp)) {
-                // mtp.Disable();
                 _heldPiece.photonView.RPC(nameof(MoveToPoint.Disable), RpcTarget.All);
             }
 

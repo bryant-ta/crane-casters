@@ -23,12 +23,6 @@ public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
         _shape = pieceData.Shape;
         _color = pieceData.Color;
         _canRotate = pieceData.CanRotate;
-        
-        // Setup MoveToPoint
-        if (TryGetComponent(out MoveToPoint mtp)) {
-            mtp.SetMoveToPoint(pieceData.MoveToPoint);
-            mtp.enabled = true;
-        }
 
         // Populate Block list
         foreach (Vector2Int blockOffset in pieceData.Shape) {
