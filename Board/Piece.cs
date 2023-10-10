@@ -25,9 +25,7 @@ public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
         _canRotate = pieceData.CanRotate;
         
         // Setup MoveToPoint
-        print(pieceData.MoveToPoint);
         if (TryGetComponent(out MoveToPoint mtp)) {
-            print("setting move to point");
             mtp.SetMoveToPoint(pieceData.MoveToPoint);
             mtp.enabled = true;
         }
@@ -45,6 +43,7 @@ public class Piece : MonoBehaviourPun, IPunInstantiateMagicCallback {
         }
     }
 
+    // Note: this is not called if instantiated network object is not root
     public void OnPhotonInstantiate(PhotonMessageInfo info) { Init((PieceData) info.photonView.InstantiationData[0]); }
 
     // Rotate clockwise

@@ -5,15 +5,24 @@ using Photon.Pun;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerInput))]
-public class Player : MonoBehaviourPun {
+public class Player : MonoBehaviourPun, IPunInstantiateMagicCallback {
+    public int PlayerId;
+    
     [SerializeField] Piece _heldPiece;
     [SerializeField] LayerMask _interactableLayer;
 
     Board _playerBoard;
+    PlayerHealth _attackTarget;
 
     List<GameObject> _nearObjs = new();
 
-    void Start() { _playerBoard = GetComponentInParent<Board>(); }
+    void Awake() { _playerBoard = GetComponentInParent<Board>(); }
+
+    public void OnPhotonInstantiate(PhotonMessageInfo info) {
+        PlayerId = (int) info.photonView.InstantiationData[0];
+        
+        GameManager.Instance.UpdatePlayerList();
+    }
 
     public void Interact() {
         if (_heldPiece == null) {
@@ -25,6 +34,32 @@ public class Player : MonoBehaviourPun {
 
     public void RotatePiece() {
         if (_heldPiece) _heldPiece.photonView.RPC(nameof(Piece.RotateCW), RpcTarget.All);
+    }
+    
+    public void Attack() {
+        if (_attackTarget) {
+            int dmg = _playerBoard.CalculateBoardDamage();
+            _attackTarget.ModifyHp(-dmg);
+            print($"Did {dmg} damage to Player {_attackTarget}");
+        }
+    }
+
+    public void SelectTarget(int targetPlayer) {
+        if (targetPlayer > PhotonNetwork.CurrentRoom.PlayerCount) {
+            Debug.Log($"Selected target {targetPlayer}, but there are only {PhotonNetwork.CurrentRoom.PlayerCount} players in the room.");
+            return;
+        }
+        
+        // should prob to cache/only update this when player list changes
+        List<PlayerHealth> otherPlayers = new();
+        foreach (Photon.Realtime.Player p in PhotonNetwork.PlayerListOthers) {
+            print("trying " + p.ActorNumber);
+            // GameObject playerObj = (GameObject) p.TagObject;
+            // otherPlayers.Add(playerObj.GetComponent<PlayerHealth>());
+        }
+        
+        _attackTarget = otherPlayers[targetPlayer];
+        print($"Selected Player {_attackTarget} as target");
     }
 
     void PickUp() {

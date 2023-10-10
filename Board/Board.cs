@@ -65,6 +65,13 @@ public class Board : MonoBehaviourPun {
         return true;
     }
 
+    public int CalculateBoardDamage() {
+        // TODO: implement board power scoring based on matching color groups and size
+        return 10;
+    }
+
+    #region Helper
+
     [PunRPC]
     public void S_UpdateBlock(Block newBlock, int originX, int originY) {
         Vector2Int boardPos = new Vector2Int(originX + newBlock.Position.x, originY + newBlock.Position.y);
@@ -78,4 +85,6 @@ public class Board : MonoBehaviourPun {
 
     public bool IsValidPlacement(int x, int y) { return IsInBounds(x, y) && !_blocks[x,y].IsActive; }
     public bool IsInBounds(int x, int y) { return !(x < 0 || x >= _width || y < 0 || y >= _height); }
+    
+    #endregion
 }

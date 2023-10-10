@@ -34,4 +34,36 @@ public class PlayerInput : MonoBehaviourPun {
             _player.RotatePiece();
         }
     }
+    
+    public void OnAttack(InputAction.CallbackContext ctx) {
+        if (!photonView.IsMine) return;
+
+        if (ctx.performed) {
+            _player.Attack();
+        }
+    }
+    
+    public void OnSelectTarget1(InputAction.CallbackContext ctx) {
+        if (!photonView.IsMine) return;
+
+        if (ctx.performed) {
+            _player.SelectTarget(1);
+        }
+    }
+    
+    public void OnSelectTarget2(InputAction.CallbackContext ctx) {
+        if (!photonView.IsMine) return;
+
+        if (ctx.performed) {
+            _player.SelectTarget(2);
+        }
+    }
+    
+    public void OnSelectTarget3(InputAction.CallbackContext ctx) {
+        if (!photonView.IsMine) return;
+
+        if (ctx.performed) {
+            _player.SelectTarget(3);
+        }
+    }
 }
